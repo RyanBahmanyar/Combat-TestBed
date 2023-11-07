@@ -6,7 +6,7 @@ enum PlayerStates
     IDLE,
     GROUNDED,
     JUMP,
-    WALK,
+    MOVE,
     FALLING
     // GLIDE
 }
@@ -44,9 +44,9 @@ public class PlayerStateFactory
         return _states[PlayerStates.JUMP];
     }
 
-    public PlayerBaseState Walk()
+    public PlayerBaseState Move()
     {
-        return _states[PlayerStates.WALK];
+        return _states[PlayerStates.MOVE];
     }
 
     public PlayerBaseState Falling()

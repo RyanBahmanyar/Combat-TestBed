@@ -3,7 +3,7 @@ using UnityEngine;
 //Sub state
 public class PlayerMoveState : PlayerBaseState
 {
-    private RaycastHit _slopeHit;
+    // private RaycastHit _slopeHit;
 
     public PlayerMoveState(PlayerStateMachine currentContext, PlayerStateFactory playerStateFactory)
     : base (currentContext, playerStateFactory)
@@ -22,6 +22,10 @@ public class PlayerMoveState : PlayerBaseState
     public override void EnterState()
     {
         Debug.Log("Entered Move Sub-State");
+
+        //Setting Animation
+        Context.Animator.SetBool(Context.IsWalkingHash, true);
+        Context.Animator.SetBool(Context.IsRunningHash, false);
     }
 
     public override void ExitState()
@@ -34,6 +38,9 @@ public class PlayerMoveState : PlayerBaseState
 
     public override void UpdateState()
     {
+        //Change player animation to running if their movement input reaches a certain threshold
+        Context.Animator.SetBool(Context.IsRunningHash, Context.CurrentMovementInput.magnitude >= 0.5f);
+
         MovePlayerRelativeToCamera();
         CheckSwitchStates();
     }
@@ -54,21 +61,22 @@ public class PlayerMoveState : PlayerBaseState
 
         //Create and apply camera relative movement
         Vector3 cameraRelativeMovement = forwardRelativeVerticalInput + rightRelativeHorizontalInput;
-        cameraRelativeMovement = cameraRelativeMovement.normalized;
+        // cameraRelativeMovement = cameraRelativeMovement.normalized;
+        Context.CharacterController.Move(cameraRelativeMovement * Time.deltaTime);
 
-        Context.RB.velocity = new Vector3(cameraRelativeMovement.x * Context.Speed, Context.RB.velocity.y, cameraRelativeMovement.z * Context.Speed);
+        // Context.RB.velocity = new Vector3(cameraRelativeMovement.x * Context.Speed, Context.RB.velocity.y, cameraRelativeMovement.z * Context.Speed);
     }
 
-    private bool OnSlope()
-    {
-        if(Physics.Raycast(Context.transform.position, Vector3.down, out _slopeHit, Context.DistanceToGround + 0.3f))
-        {
-            float angle = Vector3.Angle(Vector3.up, _slopeHit.normal);
-            return angle < Context.MaxSlopeAngle && angle != 0;
-        }
+    // private bool OnSlope()
+    // {
+    //     if(Physics.Raycast(Context.transform.position, Vector3.down, out _slopeHit, Context.DistanceToGround + 0.3f))
+    //     {
+    //         float angle = Vector3.Angle(Vector3.up, _slopeHit.normal);
+    //         return angle < Context.MaxSlopeAngle && angle != 0;
+    //     }
 
-        return false;
-    }
+    //     return false;
+    // }
 
     // private Vector3 GetSlopeMoveDirection()
     // {

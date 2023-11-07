@@ -18,7 +18,6 @@ public class PlayerGroundedState : PlayerBaseState
     {
         if(Context.IsJumpPressed)
         {
-            // Context.IsGrounded = false;
             SwitchState(Factory.Jump());
         }
         else if(!Context.IsGrounded)
@@ -41,7 +40,7 @@ public class PlayerGroundedState : PlayerBaseState
     {
         if(Context.IsMovementPressed)
         {
-            SetSubState(Factory.Walk());
+            SetSubState(Factory.Move());
         }
         else
         {

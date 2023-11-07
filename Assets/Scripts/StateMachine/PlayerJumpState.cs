@@ -14,7 +14,7 @@ public class PlayerJumpState : PlayerBaseState
     //If player presses glide, switch to Glide state
     public override void CheckSwitchStates()
     {
-        if(Context.IsGrounded && Context.RB.velocity.y < 0)
+        if(Context.CharacterController.isGrounded /*&& Context.RB.velocity.y < 0*/)
         {
             SwitchState(Factory.Grounded());
         }
@@ -39,7 +39,7 @@ public class PlayerJumpState : PlayerBaseState
     {
         if(Context.IsMovementPressed)
         {
-            SetSubState(Factory.Walk());
+            SetSubState(Factory.Move());
         }
         else
         {
@@ -55,14 +55,18 @@ public class PlayerJumpState : PlayerBaseState
 
     void JumpHandler()
     {
-        Context.RB.velocity = new Vector3(Context.RB.velocity.x, 0f, Context.RB.velocity.z);
-        Context.RB.AddForce(Context.transform.up * Context.JumpHeight, ForceMode.Impulse);
-        Context.TimeInAir = 0f;
+        // Context.RB.velocity = new Vector3(Context.RB.velocity.x, 0f, Context.RB.velocity.z);
+        // Context.RB.AddForce(Context.transform.up * Context.JumpHeight, ForceMode.Impulse);
+        // Context.TimeInAir = 0f;
+
+        Context.CurrentMovementY = Context.JumpHeight;
     }
 
     void HandleGravity()
     {
-        Context.RB.AddForce(Vector3.up * Context.Gravity, ForceMode.Acceleration);
-        Context.TimeInAir += Time.deltaTime;//tracking time in air for gliding
+        // Context.RB.AddForce(Vector3.up * Context.Gravity, ForceMode.Acceleration);
+        // Context.TimeInAir += Time.deltaTime;//tracking time in air for gliding
+
+        Context.CurrentMovementY = Context.Gravity;
     }
 }

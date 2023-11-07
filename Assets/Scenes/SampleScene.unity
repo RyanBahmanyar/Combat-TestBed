@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 146624789}
   - component: {fileID: 146624790}
   - component: {fileID: 146624791}
+  - component: {fileID: 146624792}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -191,7 +192,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 146624787}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91db13fae02683443bc5142820db618e, type: 3}
   m_Name: 
@@ -217,6 +218,26 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &146624792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 146624787}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73f52d109e39a05448328c7bb28fccb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _gravity: 0
+  _groundSpeed: 0
+  _groundDrag: 0
+  _jumpHeight: 0
+  _gliderObject: {fileID: 0}
+  _glideDrag: 0
+  _glideSpeed: 0
+  _maxSlopeAngle: 0
 --- !u!1 &167644472
 GameObject:
   m_ObjectHideFlags: 0

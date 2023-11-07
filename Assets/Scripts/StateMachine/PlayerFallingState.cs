@@ -18,10 +18,10 @@ public class PlayerFallingState : PlayerBaseState
         {
             SwitchState(Factory.Grounded());
         }
-        else if(Context.IsGlidePressed)
-        {
-            SwitchState(Factory.Glide());
-        }
+        // else if(Context.IsGlidePressed)
+        // {
+        //     SwitchState(Factory.Glide());
+        // }
     }
 
     public override void EnterState()
@@ -38,7 +38,7 @@ public class PlayerFallingState : PlayerBaseState
     {
         if(Context.IsMovementPressed)
         {
-            SetSubState(Factory.Walk());
+            SetSubState(Factory.Move());
         }
         else
         {
@@ -54,7 +54,8 @@ public class PlayerFallingState : PlayerBaseState
 
     void HandleGravity()
     {
-        Context.RB.AddForce(Vector3.up * Context.Gravity, ForceMode.Acceleration);
-        Context.TimeInAir += Time.deltaTime;//tracking time in air for gliding
+        // Context.RB.AddForce(Vector3.up * Context.Gravity, ForceMode.Acceleration);
+        // Context.TimeInAir += Time.deltaTime;//tracking time in air for gliding
+        Context.CurrentMovementY = Context.Gravity;
     }
 }
