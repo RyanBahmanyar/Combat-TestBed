@@ -37,6 +37,7 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] float _maxJumpTime;
     private float _timeToApex;
     private bool _isJumpPressed = false;
+    private bool _requiresNewJumpPressed;
     private float _gravity;
     private float _initialJumpVelocity;
 
@@ -67,6 +68,7 @@ public class PlayerStateMachine : MonoBehaviour
     public float CurrentMovementY { get {return _currentMovement.y; } set { _currentMovement.y = value; }}
     public bool IsMovementPressed { get { return _isMovementPressed; }}
     public bool IsJumpPressed { get { return _isJumpPressed; }}
+    public bool RequiresNewJumpPressed { get { return _requiresNewJumpPressed; } set { _requiresNewJumpPressed = value; }}
     public float JumpHeight { get { return _maxJumpHeight; }}
     public float InitialJumpVelocity { get { return _initialJumpVelocity; }}
     public float Gravity { get { return _gravity; }}
@@ -136,6 +138,7 @@ public class PlayerStateMachine : MonoBehaviour
     void OnJump(InputAction.CallbackContext context)
     {
         _isJumpPressed = context.ReadValueAsButton();
+        _requiresNewJumpPressed = false;
     }
 
     void MovePlayerRelativeToCamera()

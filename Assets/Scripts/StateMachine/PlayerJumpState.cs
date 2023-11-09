@@ -16,6 +16,7 @@ public class PlayerJumpState : PlayerBaseState
         if(Context.CharacterController.isGrounded)
         {
             SwitchState(Factory.Grounded());
+            Context.Animator.SetBool(Context.IsJumpingHash, false);
         }
         else if(!Context.IsJumpPressed)
         {
@@ -25,13 +26,16 @@ public class PlayerJumpState : PlayerBaseState
 
     public override void EnterState()
     {
-        InitializeSubState();
         Debug.Log("Entered the Jump State");
+
+        InitializeSubState();
+        Context.Animator.SetBool(Context.IsJumpingHash, true);
         JumpHandler();
     }
 
     public override void ExitState()
     {
+        Context.RequiresNewJumpPressed = true;
     }
 
     public override void InitializeSubState()

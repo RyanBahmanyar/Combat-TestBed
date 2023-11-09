@@ -23,7 +23,6 @@ public class PlayerMoveState : PlayerBaseState
     {
         Debug.Log("Entered Move Sub-State");
 
-        //Setting Animation
         Context.Animator.SetBool(Context.IsWalkingHash, true);
         Context.Animator.SetBool(Context.IsRunningHash, false);
     }

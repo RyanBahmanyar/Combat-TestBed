@@ -21,12 +21,14 @@ public class PlayerFallingState : PlayerBaseState
 
     public override void EnterState()
     {
-        InitializeSubState();
         Debug.Log("Entered Falling State");
+        InitializeSubState();
+        Context.Animator.SetBool(Context.IsJumpingHash, true);
     }
 
     public override void ExitState()
     {
+        Context.Animator.SetBool(Context.IsJumpingHash, false);
     }
 
     public override void InitializeSubState()
@@ -49,6 +51,6 @@ public class PlayerFallingState : PlayerBaseState
 
     void HandleGravity()
     {
-        Context.CurrentMovementY += Context.Gravity * 2f * Time.deltaTime;
+        Context.CurrentMovementY += Context.Gravity * 1.5f * Time.deltaTime;
     }
 }

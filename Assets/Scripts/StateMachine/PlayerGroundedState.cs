@@ -16,7 +16,7 @@ public class PlayerGroundedState : PlayerBaseState
     //If Player walks off a ledge, then switch to Falling state
     public override void CheckSwitchStates()
     {
-        if(Context.IsJumpPressed)
+        if(Context.IsJumpPressed && !Context.RequiresNewJumpPressed)
         {
             SwitchState(Factory.Jump());
         }
@@ -28,8 +28,8 @@ public class PlayerGroundedState : PlayerBaseState
 
     public override void EnterState()
     {
-        InitializeSubState();
         Debug.Log("Entered the Grounded State");
+        InitializeSubState();
     }
 
     public override void ExitState()
