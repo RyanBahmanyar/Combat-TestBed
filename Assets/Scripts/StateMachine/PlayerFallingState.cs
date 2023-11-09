@@ -11,17 +11,12 @@ public class PlayerFallingState : PlayerBaseState
     }
 
     //If Player lands on the ground, then switch to Grounded state
-    //If Player presses Glide button while in the air (falling or jumping), then switch to Glide state
     public override void CheckSwitchStates()
     {
-        if(Context.IsGrounded)
+        if(Context.CharacterController.isGrounded)
         {
             SwitchState(Factory.Grounded());
         }
-        // else if(Context.IsGlidePressed)
-        // {
-        //     SwitchState(Factory.Glide());
-        // }
     }
 
     public override void EnterState()
@@ -54,8 +49,6 @@ public class PlayerFallingState : PlayerBaseState
 
     void HandleGravity()
     {
-        // Context.RB.AddForce(Vector3.up * Context.Gravity, ForceMode.Acceleration);
-        // Context.TimeInAir += Time.deltaTime;//tracking time in air for gliding
-        Context.CurrentMovementY = Context.Gravity;
+        Context.CurrentMovementY += Context.Gravity * 2f * Time.deltaTime;
     }
 }

@@ -3,6 +3,7 @@ using UnityEngine;
 
 /*
 * Establishes methods and variables that concrete states will inherit when derived from this class
+* HSM implementation referenced from https://www.youtube.com/watch?v=kV06GiJgFhc&
 */
 public abstract class PlayerBaseState
 {

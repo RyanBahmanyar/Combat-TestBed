@@ -41,45 +41,6 @@ public class PlayerMoveState : PlayerBaseState
         //Change player animation to running if their movement input reaches a certain threshold
         Context.Animator.SetBool(Context.IsRunningHash, Context.CurrentMovementInput.magnitude >= 0.5f);
 
-        MovePlayerRelativeToCamera();
         CheckSwitchStates();
     }
-
-    void MovePlayerRelativeToCamera()
-    {
-        //Get Camera normalized directional vectors
-        Vector3 forward = Camera.main.transform.forward;
-        Vector3 right = Camera.main.transform.right;
-        forward.y = 0;
-        right.y = 0;
-        forward = forward.normalized;
-        right = right.normalized;
-
-        //Create direction-relative input vectors
-        Vector3 forwardRelativeVerticalInput = Context.VerticalInput * forward;
-        Vector3 rightRelativeHorizontalInput = Context.HorizontalInput * right;
-
-        //Create and apply camera relative movement
-        Vector3 cameraRelativeMovement = forwardRelativeVerticalInput + rightRelativeHorizontalInput;
-        // cameraRelativeMovement = cameraRelativeMovement.normalized;
-        Context.CharacterController.Move(cameraRelativeMovement * Time.deltaTime);
-
-        // Context.RB.velocity = new Vector3(cameraRelativeMovement.x * Context.Speed, Context.RB.velocity.y, cameraRelativeMovement.z * Context.Speed);
-    }
-
-    // private bool OnSlope()
-    // {
-    //     if(Physics.Raycast(Context.transform.position, Vector3.down, out _slopeHit, Context.DistanceToGround + 0.3f))
-    //     {
-    //         float angle = Vector3.Angle(Vector3.up, _slopeHit.normal);
-    //         return angle < Context.MaxSlopeAngle && angle != 0;
-    //     }
-
-    //     return false;
-    // }
-
-    // private Vector3 GetSlopeMoveDirection()
-    // {
-    //     return Vector3.ProjectOnPlane(_moveDirection, _slopeHit.normal).normalized;
-    // }
 }

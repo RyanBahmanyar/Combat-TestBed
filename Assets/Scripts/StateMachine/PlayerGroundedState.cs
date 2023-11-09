@@ -20,7 +20,7 @@ public class PlayerGroundedState : PlayerBaseState
         {
             SwitchState(Factory.Jump());
         }
-        else if(!Context.IsGrounded)
+        else if(!Context.CharacterController.isGrounded)
         {
             SwitchState(Factory.Falling());
         }
@@ -50,22 +50,14 @@ public class PlayerGroundedState : PlayerBaseState
 
     public override void UpdateState()
     {
-        RotatePlayer();
+        HandleGravity();
         CheckSwitchStates();
     }
 
-    private void RotatePlayer()
+    //Even though the player is in the Grounded state, CharacterController.isGrounded variable requires some downward force in order to 
+    //work properly
+    private void HandleGravity()
     {
-        //rotate orientation
-        Vector3 viewDirection = Context.transform.position - new Vector3(Camera.main.transform.position.x, Context.transform.position.y, Camera.main.transform.position.z);
-        Context.Orientation.forward = viewDirection.normalized;
-
-        //rotate player object
-        Vector3 inputDirection = Context.Orientation.forward * Context.VerticalInput + Context.Orientation.right * Context.HorizontalInput;
-
-        if(inputDirection != Vector3.zero)
-        {
-            Context.PlayerObj.forward = Vector3.Slerp(Context.PlayerObj.forward, inputDirection.normalized, Time.deltaTime * Context.RotationSpeed);
-        }
+        Context.CurrentMovementY += Context.GroundGravity * Time.deltaTime;
     }
 }

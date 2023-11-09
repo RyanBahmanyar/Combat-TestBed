@@ -1,3 +1,5 @@
+using System;
+using System.IO.Compression;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -9,55 +11,34 @@ using UnityEngine.TextCore.Text;
 */
 public class PlayerStateMachine : MonoBehaviour
 {
-    #region Player Movement Settings
-    [Header("Player Movement Settings")]
+    #region Reference Variables
     private PlayerInput _playerInput;
     private CharacterController _characterController;
     private Animator _animator;
+    Transform _playerObj;
+    private Transform _orientation;
+
+    #endregion
+
+    #region Player Movement Settings
+    [Header("Player Movement Settings")]
     private Vector2 _currentMovementInput;
     Vector3 _currentMovement;
     bool _isMovementPressed;
-
-    // Rigidbody _rb;
-
-    Transform _playerObj;
-    // Vector3 _moveDirection;
-    // bool _isMovementPressed;
-    private Transform _orientation;
-    float _horizontalInput;
-    float _verticalInput;
-    private bool _grounded;
-    // private float _distToGround;
-    private float _speed;
-    [SerializeField] float _gravity;
-    // [SerializeField] float _groundSpeed;
-    // [SerializeField] float _groundDrag;
+    [SerializeField] float _speed;
+    private float _groundGravity;
     private float _rotationSpeed;
 
     #endregion
 
     #region Jump Settings
     [Header("Jump Setting")]
-    [SerializeField] float _jumpHeight;
+    [SerializeField] float _maxJumpHeight;
+    [SerializeField] float _maxJumpTime;
+    private float _timeToApex;
     private bool _isJumpPressed = false;
-    private float _timeInAir = 0f;
-
-    #endregion
-
-    // #region Glide Settings
-    // [Header("Glide Settings")]
-    // public GameObject _gliderObject;
-    // [SerializeField] float _glideDrag;
-    // [SerializeField] float _glideSpeed;
-    // private bool _isGlidePressed = false;
-    // private bool _isAirBoostPressed = false;
-
-    // #endregion
-
-    #region Slope Settings
-    [Header("Slope Settings")]
-    [SerializeField] float _maxSlopeAngle;
-    private RaycastHit _slopeHit;
+    private float _gravity;
+    private float _initialJumpVelocity;
 
     #endregion
 
@@ -78,29 +59,20 @@ public class PlayerStateMachine : MonoBehaviour
     public PlayerBaseState CurrentState { get { return _currentState; } set { _currentState = value; }}
     public CharacterController CharacterController { get { return _characterController; }}
     public Animator Animator { get { return _animator; }}
-    public bool IsJumpPressed { get { return _isJumpPressed; }}
-    // public Rigidbody RB { get { return _rb; }}
-    public float JumpHeight { get { return _jumpHeight; }}
-    public float TimeInAir { get { return _timeInAir; } set { _timeInAir = value; }}
-    public bool IsGrounded { get { return _grounded; } set { _grounded = value; }}
-    // public float DistanceToGround { get { return _distToGround; }}
-    public float Gravity { get { return _gravity; }}
-    public bool IsMovementPressed { get { return _isMovementPressed; }}
-    // public bool IsGlidePressed { get { return _isGlidePressed; }}
-    // public bool IsAirBoostPressed { get { return _isAirBoostPressed; }}
-    public float Speed { get { return _speed; } set { _speed = value; }}
-    // public float GlideDrag { get {return _glideDrag; }}
-    // public float GlideSpeed { get {return _glideSpeed; }}
-    // public float GroundDrag { get {return _groundDrag; }}
-    // public float GroundSpeed { get {return _groundSpeed; }}
-    public float RotationSpeed { get {return _rotationSpeed; } set { _rotationSpeed = value; }}
     public Transform PlayerObj { get {return _playerObj; } set { _playerObj = value;}}
     public Transform Orientation { get {return _orientation; }}
     public Vector2 CurrentMovementInput { get {return _currentMovement; }}
-    public float VerticalInput { get {return _currentMovement.x; }}
-    public float HorizontalInput { get {return _currentMovement.z; }}
+    public float VerticalInput { get {return _currentMovement.z; }}
+    public float HorizontalInput { get {return _currentMovement.x; }}
     public float CurrentMovementY { get {return _currentMovement.y; } set { _currentMovement.y = value; }}
-    // public float MaxSlopeAngle { get {return _maxSlopeAngle; }}
+    public bool IsMovementPressed { get { return _isMovementPressed; }}
+    public bool IsJumpPressed { get { return _isJumpPressed; }}
+    public float JumpHeight { get { return _maxJumpHeight; }}
+    public float InitialJumpVelocity { get { return _initialJumpVelocity; }}
+    public float Gravity { get { return _gravity; }}
+    public float GroundGravity { get { return _groundGravity; }}
+    public float Speed { get { return _speed; } set { _speed = value; }}
+    public float RotationSpeed { get {return _rotationSpeed; } set { _rotationSpeed = value; }}
     public int IsWalkingHash { get {return _isWalkingHash; }}
     public int IsRunningHash { get {return _isRunningHash; }}
     public int IsJumpingHash { get {return _isJumpingHash; }}
@@ -113,11 +85,9 @@ public class PlayerStateMachine : MonoBehaviour
         _playerInput = new PlayerInput();
         _characterController = GetComponent<CharacterController>();
         _animator = GetComponent<Animator>();
+        _playerObj = GameObject.Find("Jammo_LowPoly").GetComponent<Transform>();
+        _orientation = GameObject.Find("Orientation").GetComponent<Transform>();
 
-        //setup state
-        _states = new PlayerStateFactory(this);
-        _currentState = _states.Grounded();
-        _currentState.EnterState();
 
         //Set up animation hash references
         _isWalkingHash = Animator.StringToHash("IsWalking");
@@ -131,26 +101,28 @@ public class PlayerStateMachine : MonoBehaviour
         _playerInput.PlayerControls.Jump.started += OnJump;
         _playerInput.PlayerControls.Jump.canceled += OnJump;
 
-        // _rb = GetComponent<Rigidbody>();
-        // _rb.freezeRotation = true;
-        // _distToGround = GetComponent<Collider>().bounds.extents.y;
-        // _gliderObject.SetActive(false);
-        // _speed = _groundSpeed;
-        _grounded = true;
+        //Set up movement variables
         _isMovementPressed = false;
-        // _rb.drag = _groundDrag;
         _rotationSpeed = 5f;
-        _playerObj = GameObject.Find("PlayerObj").GetComponent<Transform>();
-        _orientation = GameObject.Find("Orientation").GetComponent<Transform>();
+        _groundGravity = -0.5f;
+
+        //Jump equations found at https://www.youtube.com/watch?v=h2r3_KjChf4
+        _timeToApex = _maxJumpTime / 2;
+        _gravity = -2 * _maxJumpHeight / Mathf.Pow(_timeToApex, 2);
+        _initialJumpVelocity = 2 * _maxJumpHeight / _timeToApex;
+
+        //setup state
+        _states = new PlayerStateFactory(this);
+        _currentState = _states.Grounded();
+        _currentState.EnterState();
     }
 
     // Update is called once per frame
     void Update()
     {
-        // _characterController.Move(_currentMovement * Time.deltaTime);
+        MovePlayerRelativeToCamera();
+        RotatePlayer();
         _currentState.UpdateStates();
-        // GetInput();
-        // GroundCheck();
     }
 
     void OnMovementInput(InputAction.CallbackContext context)
@@ -166,15 +138,41 @@ public class PlayerStateMachine : MonoBehaviour
         _isJumpPressed = context.ReadValueAsButton();
     }
 
-    // private void GetInput()
-    // {
-    //     // _horizontalInput = Input.GetAxisRaw("Horizontal");
-    //     // _verticalInput = Input.GetAxisRaw("Vertical");
-    //     // _isJumpPressed = Input.GetButtonDown("Jump");
-    //     // _isGlidePressed = Input.GetButtonDown("Glide");
-    //     // _isAirBoostPressed = Input.GetButtonDown("Air Boost");
-    //     // _isMovementPressed = _horizontalInput != 0 || _verticalInput != 0;
-    // }
+    void MovePlayerRelativeToCamera()
+    {
+        //Get Camera normalized directional vectors
+        Vector3 forward = Camera.main.transform.forward;
+        Vector3 right = Camera.main.transform.right;
+        forward.y = 0;
+        right.y = 0;
+        forward = forward.normalized;
+        right = right.normalized;
+
+        //Create direction-relative input vectors
+        Vector3 forwardRelativeVerticalInput = _currentMovement.z * forward;
+        Vector3 rightRelativeHorizontalInput = _currentMovement.x * right;
+
+        //Create and apply camera relative movement
+        Vector3 cameraRelativeMovement = forwardRelativeVerticalInput + rightRelativeHorizontalInput;
+        cameraRelativeMovement.y = _currentMovement.y;
+        // cameraRelativeMovement = cameraRelativeMovement.normalized;
+        _characterController.Move(cameraRelativeMovement * _speed * Time.deltaTime);
+    }
+
+    private void RotatePlayer()
+    {
+        //rotate orientation
+        Vector3 viewDirection = transform.position - new Vector3(Camera.main.transform.position.x, transform.position.y, Camera.main.transform.position.z);
+        _orientation.forward = viewDirection.normalized;
+
+        //rotate player object
+        Vector3 inputDirection = _orientation.forward * _currentMovement.z + _orientation.right * _currentMovement.x;
+
+        if(inputDirection != Vector3.zero)
+        {
+            _playerObj.forward = Vector3.Slerp(_playerObj.forward, inputDirection.normalized, Time.deltaTime * _rotationSpeed);
+        }
+    }
 
     //Enable the Player Controls action map
     void OnEnable()
@@ -187,10 +185,4 @@ public class PlayerStateMachine : MonoBehaviour
     {
         _playerInput.PlayerControls.Disable();
     }
-
-    // void GroundCheck()
-    // {
-    //     _grounded = Physics.Raycast(transform.position, Vector3.down, _distToGround + 0.1f);
-    //     //Debug.Log(_context.IsGrounded);
-    // }
 }
