@@ -38,7 +38,9 @@ public class PlayerMoveState : PlayerBaseState
     public override void UpdateState()
     {
         //Change player animation to running if their movement input reaches a certain threshold
-        Context.Animator.SetBool(Context.IsRunningHash, Context.CurrentMovementInput.magnitude >= 0.5f);
+        Vector2 movement = new Vector2(Context.VerticalInput, Context.HorizontalInput);
+        Context.Animator.SetBool(Context.IsRunningHash, movement.magnitude >= 0.5f);
+        Debug.Log(movement.magnitude);
 
         CheckSwitchStates();
     }

@@ -22,7 +22,6 @@ public class PlayerStateMachine : MonoBehaviour
 
     #region Player Movement Settings
     [Header("Player Movement Settings")]
-    private Vector2 _currentMovementInput;
     Vector3 _currentMovement;
     bool _isMovementPressed;
     [SerializeField] float _speed;
@@ -62,7 +61,6 @@ public class PlayerStateMachine : MonoBehaviour
     public Animator Animator { get { return _animator; }}
     public Transform PlayerObj { get {return _playerObj; } set { _playerObj = value;}}
     public Transform Orientation { get {return _orientation; }}
-    public Vector2 CurrentMovementInput { get {return _currentMovement; }}
     public float VerticalInput { get {return _currentMovement.z; }}
     public float HorizontalInput { get {return _currentMovement.x; }}
     public float CurrentMovementY { get {return _currentMovement.y; } set { _currentMovement.y = value; }}
@@ -129,9 +127,11 @@ public class PlayerStateMachine : MonoBehaviour
 
     void OnMovementInput(InputAction.CallbackContext context)
     {
-        _currentMovementInput = context.ReadValue<Vector2>();
-        _currentMovement.x = _currentMovementInput.x;
-        _currentMovement.z = _currentMovementInput.y;
+        // _currentMovementInput = context.ReadValue<Vector2>();
+        _currentMovement.x = Input.GetAxis("Horizontal");
+        _currentMovement.z = Input.GetAxis("Vertical");
+        // Debug.Log("X: " + _currentMovement.x);
+        // Debug.Log("Z: " + _currentMovement.z);
         _isMovementPressed = _currentMovement.x != 0 || _currentMovement.z != 0;
     }
 
@@ -156,9 +156,8 @@ public class PlayerStateMachine : MonoBehaviour
         Vector3 rightRelativeHorizontalInput = _currentMovement.x * right;
 
         //Create and apply camera relative movement
-        Vector3 cameraRelativeMovement = forwardRelativeVerticalInput + rightRelativeHorizontalInput;
+        Vector3 cameraRelativeMovement = Vector3.ClampMagnitude(forwardRelativeVerticalInput + rightRelativeHorizontalInput, 1);
         cameraRelativeMovement.y = _currentMovement.y;
-        // cameraRelativeMovement = cameraRelativeMovement.normalized;
         _characterController.Move(cameraRelativeMovement * _speed * Time.deltaTime);
     }
 
