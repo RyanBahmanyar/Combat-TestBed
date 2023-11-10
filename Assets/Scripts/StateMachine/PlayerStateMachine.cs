@@ -1,9 +1,5 @@
-using System;
-using System.IO.Compression;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.TextCore.Text;
 
 /*
 * Stores the persistent state data that is passed to the active concrete states.
@@ -88,7 +84,6 @@ public class PlayerStateMachine : MonoBehaviour
         _playerObj = GameObject.Find("Jammo_LowPoly").GetComponent<Transform>();
         _orientation = GameObject.Find("Orientation").GetComponent<Transform>();
 
-
         //Set up animation hash references
         _isWalkingHash = Animator.StringToHash("IsWalking");
         _isRunningHash = Animator.StringToHash("IsRunning");
@@ -103,7 +98,7 @@ public class PlayerStateMachine : MonoBehaviour
 
         //Set up movement variables
         _isMovementPressed = false;
-        _rotationSpeed = 5f;
+        _rotationSpeed = 4f;
         _groundGravity = -0.5f;
 
         //Jump equations found at https://www.youtube.com/watch?v=h2r3_KjChf4
@@ -127,11 +122,9 @@ public class PlayerStateMachine : MonoBehaviour
 
     void OnMovementInput(InputAction.CallbackContext context)
     {
-        // _currentMovementInput = context.ReadValue<Vector2>();
+        //GetAxis() seems to be a better option for smoother analog control using joystick
         _currentMovement.x = Input.GetAxis("Horizontal");
         _currentMovement.z = Input.GetAxis("Vertical");
-        // Debug.Log("X: " + _currentMovement.x);
-        // Debug.Log("Z: " + _currentMovement.z);
         _isMovementPressed = _currentMovement.x != 0 || _currentMovement.z != 0;
     }
 

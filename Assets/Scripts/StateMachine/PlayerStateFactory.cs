@@ -8,7 +8,6 @@ enum PlayerStates
     JUMP,
     MOVE,
     FALLING
-    // GLIDE
 }
 
 public class PlayerStateFactory
@@ -24,10 +23,8 @@ public class PlayerStateFactory
         _states[PlayerStates.IDLE] = new PlayerIdleState(_context, this);
         _states[PlayerStates.GROUNDED] = new PlayerGroundedState(_context, this);
         _states[PlayerStates.JUMP] = new PlayerJumpState(_context, this);
-        // _states[PlayerStates.WALK] = new PlayerWalkState(_context, this);
         _states[PlayerStates.MOVE] = new PlayerMoveState(_context, this);
         _states[PlayerStates.FALLING] = new PlayerFallingState(_context, this);
-        // _states[PlayerStates.GLIDE] = new PlayerGlideState(_context, this);
     }
 
     public PlayerBaseState Idle()
@@ -54,9 +51,4 @@ public class PlayerStateFactory
     {
         return _states[PlayerStates.FALLING];
     }
-
-    // public PlayerBaseState Glide()
-    // {
-    //     return _states[PlayerStates.GLIDE];
-    // }
 }
