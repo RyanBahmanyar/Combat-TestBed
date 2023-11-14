@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -44,6 +45,7 @@ public class PlayerStateMachine : MonoBehaviour
     private int _attackCount;
     private bool _isAttackPressed = false;
     private bool _requiresNewAttackPressed;
+    private Dictionary<int, float> _attackTimes = new Dictionary<int, float>();
 
     #endregion
 
@@ -83,6 +85,7 @@ public class PlayerStateMachine : MonoBehaviour
     public float RotationSpeed { get { return _rotationSpeed; } set { _rotationSpeed = value; }}
     public int AttackCount { get { return _attackCount; } set { _attackCount = value; }}
     public bool IsAttackPressed { get { return _isAttackPressed; }}
+    public Dictionary<int, float> AttackTimes { get { return _attackTimes; }}
     public bool RequiresNewAttackPress { get { return _requiresNewAttackPressed; } set { _requiresNewAttackPressed = value; } }
     public int IsWalkingHash { get { return _isWalkingHash; }}
     public int IsRunningHash { get { return _isRunningHash; }}
@@ -127,6 +130,11 @@ public class PlayerStateMachine : MonoBehaviour
         _timeToApex = _maxJumpTime / 2;
         _gravity = -2 * _maxJumpHeight / Mathf.Pow(_timeToApex, 2);
         _initialJumpVelocity = 2 * _maxJumpHeight / _timeToApex;
+
+        //Set up attack timings
+        _attackTimes[1] = 1.2f;
+        _attackTimes[2] = 1.2f;
+        _attackTimes[3] = 1.1f;
 
         //setup state
         _states = new PlayerStateFactory(this);

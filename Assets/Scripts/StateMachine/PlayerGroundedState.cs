@@ -25,7 +25,7 @@ public class PlayerGroundedState : PlayerBaseState
         {
             SwitchState(Factory.Falling());
         }
-        else if(Context.IsAttackPressed && !Context.RequiresNewAttackPress)
+        else if(Context.IsAttackPressed)
         {
             SwitchState(Factory.Attack());
         }
