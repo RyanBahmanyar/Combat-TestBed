@@ -56,6 +56,6 @@ public class PlayerStateFactory
 
     public PlayerBaseState Attack()
     {
-        return _states[PlayerStates.FALLING];
+        return _states[PlayerStates.ATTACK];
     }
 }

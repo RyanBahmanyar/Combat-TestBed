@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,10 +14,11 @@ public class PlayerStateMachine : MonoBehaviour
     private Animator _animator;
     Transform _playerObj;
     private Transform _orientation;
+    private Coroutine _attackResetRoutine;
 
     #endregion
 
-    #region Player Movement Settings
+    #region Player Movement Variables
     [Header("Player Movement Settings")]
     Vector3 _currentMovement;
     bool _isMovementPressed;
@@ -26,7 +28,7 @@ public class PlayerStateMachine : MonoBehaviour
 
     #endregion
 
-    #region Jump Settings
+    #region Jump Variables
     [Header("Jump Setting")]
     [SerializeField] float _maxJumpHeight;
     [SerializeField] float _maxJumpTime;
@@ -35,6 +37,13 @@ public class PlayerStateMachine : MonoBehaviour
     private bool _requiresNewJumpPressed;
     private float _gravity;
     private float _initialJumpVelocity;
+
+    #endregion
+
+    #region Attack Variables
+    private int _attackCount;
+    private bool _isAttackPressed = false;
+    private bool _requiresNewAttackPressed;
 
     #endregion
 
@@ -48,6 +57,8 @@ public class PlayerStateMachine : MonoBehaviour
     private int _isWalkingHash;
     private int _isRunningHash;
     private int _isJumpingHash;
+    private int _isAttackingHash;
+    private int _attackCountHash;
 
     #endregion
 
@@ -55,11 +66,12 @@ public class PlayerStateMachine : MonoBehaviour
     public PlayerBaseState CurrentState { get { return _currentState; } set { _currentState = value; }}
     public CharacterController CharacterController { get { return _characterController; }}
     public Animator Animator { get { return _animator; }}
-    public Transform PlayerObj { get {return _playerObj; } set { _playerObj = value;}}
-    public Transform Orientation { get {return _orientation; }}
-    public float VerticalInput { get {return _currentMovement.z; }}
-    public float HorizontalInput { get {return _currentMovement.x; }}
-    public float CurrentMovementY { get {return _currentMovement.y; } set { _currentMovement.y = value; }}
+    public Transform PlayerObj { get { return _playerObj; } set { _playerObj = value;}}
+    public Transform Orientation { get { return _orientation; }}
+    public Coroutine AttackResetRoutine { get { return _attackResetRoutine; } set { _attackResetRoutine = value; }}
+    public float VerticalInput { get { return _currentMovement.z; }}
+    public float HorizontalInput { get { return _currentMovement.x; }}
+    public float CurrentMovementY { get { return _currentMovement.y; } set { _currentMovement.y = value; }}
     public bool IsMovementPressed { get { return _isMovementPressed; }}
     public bool IsJumpPressed { get { return _isJumpPressed; }}
     public bool RequiresNewJumpPressed { get { return _requiresNewJumpPressed; } set { _requiresNewJumpPressed = value; }}
@@ -68,10 +80,15 @@ public class PlayerStateMachine : MonoBehaviour
     public float Gravity { get { return _gravity; }}
     public float GroundGravity { get { return _groundGravity; }}
     public float Speed { get { return _speed; } set { _speed = value; }}
-    public float RotationSpeed { get {return _rotationSpeed; } set { _rotationSpeed = value; }}
-    public int IsWalkingHash { get {return _isWalkingHash; }}
-    public int IsRunningHash { get {return _isRunningHash; }}
-    public int IsJumpingHash { get {return _isJumpingHash; }}
+    public float RotationSpeed { get { return _rotationSpeed; } set { _rotationSpeed = value; }}
+    public int AttackCount { get { return _attackCount; } set { _attackCount = value; }}
+    public bool IsAttackPressed { get { return _isAttackPressed; }}
+    public bool RequiresNewAttackPress { get { return _requiresNewAttackPressed; } set { _requiresNewAttackPressed = value; } }
+    public int IsWalkingHash { get { return _isWalkingHash; }}
+    public int IsRunningHash { get { return _isRunningHash; }}
+    public int IsJumpingHash { get { return _isJumpingHash; }}
+    public int IsAttackingHash { get { return _isAttackingHash; }}
+    public int AttackCountHash { get { return _attackCountHash; }}
 
     #endregion
 
@@ -83,11 +100,14 @@ public class PlayerStateMachine : MonoBehaviour
         _animator = GetComponent<Animator>();
         _playerObj = GameObject.Find("Jammo_LowPoly").GetComponent<Transform>();
         _orientation = GameObject.Find("Orientation").GetComponent<Transform>();
+        _attackResetRoutine = null;
 
         //Set up animation hash references
         _isWalkingHash = Animator.StringToHash("IsWalking");
         _isRunningHash = Animator.StringToHash("IsRunning");
         _isJumpingHash = Animator.StringToHash("IsJumping");
+        _isAttackingHash = Animator.StringToHash("IsAttacking");
+        _attackCountHash = Animator.StringToHash("AttackCount");
 
         //Storing player input callbacks
         _playerInput.PlayerControls.Move.started += OnMovementInput;
@@ -95,6 +115,8 @@ public class PlayerStateMachine : MonoBehaviour
         _playerInput.PlayerControls.Move.performed += OnMovementInput;
         _playerInput.PlayerControls.Jump.started += OnJump;
         _playerInput.PlayerControls.Jump.canceled += OnJump;
+        _playerInput.PlayerControls.Attack.started += OnAttack;
+        _playerInput.PlayerControls.Attack.canceled += OnAttack;
 
         //Set up movement variables
         _isMovementPressed = false;
@@ -132,6 +154,12 @@ public class PlayerStateMachine : MonoBehaviour
     {
         _isJumpPressed = context.ReadValueAsButton();
         _requiresNewJumpPressed = false;
+    }
+
+    void OnAttack(InputAction.CallbackContext context)
+    {
+        _isAttackPressed = context.ReadValueAsButton();
+        _requiresNewAttackPressed = false;
     }
 
     void MovePlayerRelativeToCamera()

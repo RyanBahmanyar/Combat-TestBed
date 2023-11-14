@@ -17,6 +17,10 @@ public class PlayerFallingState : PlayerBaseState
         {
             SwitchState(Factory.Grounded());
         }
+        else if(Context.IsAttackPressed)
+        {
+            SwitchState(Factory.Attack());
+        }
     }
 
     public override void EnterState()

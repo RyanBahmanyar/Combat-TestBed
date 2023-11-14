@@ -14,6 +14,7 @@ public class PlayerGroundedState : PlayerBaseState
 
     //If Player pressed Jump button, then switch to Jump state
     //If Player walks off a ledge, then switch to Falling state
+    //If player presses attack button, switch to attack state
     public override void CheckSwitchStates()
     {
         if(Context.IsJumpPressed && !Context.RequiresNewJumpPressed)
@@ -23,6 +24,10 @@ public class PlayerGroundedState : PlayerBaseState
         else if(!Context.CharacterController.isGrounded)
         {
             SwitchState(Factory.Falling());
+        }
+        else if(Context.IsAttackPressed && !Context.RequiresNewAttackPress)
+        {
+            SwitchState(Factory.Attack());
         }
     }
 
