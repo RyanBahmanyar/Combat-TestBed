@@ -66,13 +66,14 @@ public class PlayerStateMachine : MonoBehaviour
 
     #region Getters and Setters
     public PlayerBaseState CurrentState { get { return _currentState; } set { _currentState = value; }}
+    public PlayerInput PlayerInput { get { return _playerInput; }}
     public CharacterController CharacterController { get { return _characterController; }}
     public Animator Animator { get { return _animator; }}
     public Transform PlayerObj { get { return _playerObj; } set { _playerObj = value;}}
     public Transform Orientation { get { return _orientation; }}
     public Coroutine AttackResetRoutine { get { return _attackResetRoutine; } set { _attackResetRoutine = value; }}
-    public float VerticalInput { get { return _currentMovement.z; }}
-    public float HorizontalInput { get { return _currentMovement.x; }}
+    public float VerticalInput { get { return _currentMovement.z; } set { _currentMovement.z = value; }}
+    public float HorizontalInput { get { return _currentMovement.x; } set { _currentMovement.x = value; }}
     public float CurrentMovementY { get { return _currentMovement.y; } set { _currentMovement.y = value; }}
     public bool IsMovementPressed { get { return _isMovementPressed; }}
     public bool IsJumpPressed { get { return _isJumpPressed; }}

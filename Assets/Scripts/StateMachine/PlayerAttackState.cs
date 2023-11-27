@@ -43,6 +43,13 @@ internal class PlayerAttackState : PlayerBaseState
     public override void EnterState()
     {
         Debug.Log("Entered the Attack State");
+
+        //disable movement and set movement to zero so player stays in place during attacks
+        Context.PlayerInput.FindAction("Move").Disable();
+        Context.VerticalInput = 0;
+        Context.HorizontalInput = 0;
+        Context.CurrentMovementY = 0;
+
         InitializeSubState();
         Context.Animator.SetBool(Context.IsAttackingHash, true);
         HandleAttack();
@@ -50,6 +57,7 @@ internal class PlayerAttackState : PlayerBaseState
 
     public override void ExitState()
     {
+        Context.PlayerInput.FindAction("Move").Enable();
     }
 
     public override void InitializeSubState()
