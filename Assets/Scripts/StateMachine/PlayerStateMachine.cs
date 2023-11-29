@@ -133,7 +133,7 @@ public class PlayerStateMachine : MonoBehaviour
         _initialJumpVelocity = 2 * _maxJumpHeight / _timeToApex;
 
         //Set up attack timings
-        _attackTimes[1] = 1.2f;
+        _attackTimes[1] = 1f;
         _attackTimes[2] = 1.2f;
         _attackTimes[3] = 1.1f;
 

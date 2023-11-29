@@ -5,6 +5,7 @@ using UnityEngine;
 internal class PlayerAttackState : PlayerBaseState
 {
     private float _timer = 0;
+    private Vector3 _targetPosition;
 
     //Reset the attack counter if the player does not press attack button X seconds after previous attack
     IEnumerator IAttackResetRoutine()
@@ -13,11 +14,6 @@ internal class PlayerAttackState : PlayerBaseState
         yield return new WaitForSeconds(Context.AttackTimes[Context.AttackCount] + 0.1f);
 
         Debug.Log("Attack not pressed, stopping combo");
-
-        Context.AttackCount = 0;
-        Context.Animator.SetInteger(Context.AttackCountHash, Context.AttackCount);
-        Context.Animator.SetBool(Context.IsAttackingHash, false);
-
         CheckSwitchStates();
     }
 
@@ -44,13 +40,14 @@ internal class PlayerAttackState : PlayerBaseState
     {
         Debug.Log("Entered the Attack State");
 
+        InitializeSubState();
+
         //disable movement and set movement to zero so player stays in place during attacks
         Context.PlayerInput.FindAction("Move").Disable();
         Context.VerticalInput = 0;
         Context.HorizontalInput = 0;
         Context.CurrentMovementY = 0;
 
-        InitializeSubState();
         Context.Animator.SetBool(Context.IsAttackingHash, true);
         HandleAttack();
     }
@@ -58,6 +55,10 @@ internal class PlayerAttackState : PlayerBaseState
     public override void ExitState()
     {
         Context.PlayerInput.FindAction("Move").Enable();
+
+        Context.AttackCount = 0;
+        Context.Animator.SetInteger(Context.AttackCountHash, Context.AttackCount);
+        Context.Animator.SetBool(Context.IsAttackingHash, false);
     }
 
     public override void InitializeSubState()
@@ -74,12 +75,15 @@ internal class PlayerAttackState : PlayerBaseState
             HandleAttack();
         }
 
+        Context.transform.position = Vector3.Lerp(Context.transform.position, _targetPosition, 3f * Time.deltaTime);
+
         _timer += Time.deltaTime;
     }
 
     public void HandleAttack()
     {
         _timer = 0;
+        _targetPosition = Context.transform.position + Context.PlayerObj.transform.forward * 3f;
         Context.RequiresNewAttackPress = true;
 
         //Don't reset attack counter if player is still pressing attack button; stop the reset coroutine
@@ -92,5 +96,6 @@ internal class PlayerAttackState : PlayerBaseState
         Context.Animator.SetInteger(Context.AttackCountHash, Context.AttackCount);
 
         Context.AttackResetRoutine = Context.StartCoroutine(IAttackResetRoutine());
+        Context.CharacterController.Move(Context.transform.forward * 5f * Time.deltaTime);
     }
 }
