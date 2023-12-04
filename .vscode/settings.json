@@ -52,5 +52,8 @@
         "Temp/": true
     },
     "dotnet.preferCSharpExtension": true,
-    "dotnet.defaultSolution": "Combat Testbed.sln"
+    "dotnet.defaultSolution": "Combat Testbed.sln",
+    "cSpell.words": [
+        "Targetable"
+    ]
 }

@@ -75,7 +75,7 @@ internal class PlayerAttackState : PlayerBaseState
             HandleAttack();
         }
 
-        Context.transform.position = Vector3.Lerp(Context.transform.position, _targetPosition, 3f * Time.deltaTime);
+        Context.transform.position = Vector3.Lerp(Context.transform.position, _targetPosition, 4f * Time.deltaTime);
 
         _timer += Time.deltaTime;
     }
@@ -83,6 +83,8 @@ internal class PlayerAttackState : PlayerBaseState
     public void HandleAttack()
     {
         _timer = 0;
+
+        //TODO adjust the target position to go towards an enemy if locked on/soft locked on, otherwise move forward like this
         _targetPosition = Context.transform.position + Context.PlayerObj.transform.forward * 3f;
         Context.RequiresNewAttackPress = true;
 
@@ -96,6 +98,5 @@ internal class PlayerAttackState : PlayerBaseState
         Context.Animator.SetInteger(Context.AttackCountHash, Context.AttackCount);
 
         Context.AttackResetRoutine = Context.StartCoroutine(IAttackResetRoutine());
-        Context.CharacterController.Move(Context.transform.forward * 5f * Time.deltaTime);
     }
 }
