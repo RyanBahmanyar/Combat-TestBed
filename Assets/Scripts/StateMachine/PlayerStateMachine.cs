@@ -17,12 +17,14 @@ public class PlayerStateMachine : MonoBehaviour
     private Transform _orientation;
     private Coroutine _attackResetRoutine;
 
+    private LockOnSystem _lockOnSystemScript;
+
     #endregion
 
     #region Player Movement Variables
     [Header("Player Movement Settings")]
     Vector3 _currentMovement;
-    bool _isMovementPressed;
+    bool _isMovementPressed = false;
     [SerializeField] float _speed;
     private float _groundGravity;
     private float _rotationSpeed;
@@ -45,6 +47,8 @@ public class PlayerStateMachine : MonoBehaviour
     private int _attackCount;
     private bool _isAttackPressed = false;
     private bool _requiresNewAttackPressed;
+    private bool _isLockOnPressed = false;
+    private bool _requiresNewLockOnPress;
     private Dictionary<int, float> _attackTimes = new Dictionary<int, float>();
 
     #endregion
@@ -105,6 +109,7 @@ public class PlayerStateMachine : MonoBehaviour
         _playerObj = GameObject.Find("Jammo_LowPoly").GetComponent<Transform>();
         _orientation = GameObject.Find("Orientation").GetComponent<Transform>();
         _attackResetRoutine = null;
+        _lockOnSystemScript = GetComponent<LockOnSystem>();
 
         //Set up animation hash references
         _isWalkingHash = Animator.StringToHash("IsWalking");
@@ -121,9 +126,10 @@ public class PlayerStateMachine : MonoBehaviour
         _playerInput.PlayerControls.Jump.canceled += OnJump;
         _playerInput.PlayerControls.Attack.started += OnAttack;
         _playerInput.PlayerControls.Attack.canceled += OnAttack;
+        _playerInput.PlayerControls.LockOn.started += OnLockOnInput;
+        _playerInput.PlayerControls.LockOn.canceled += OnLockOnInput;
 
         //Set up movement variables
-        _isMovementPressed = false;
         _rotationSpeed = 4f;
         _groundGravity = -0.5f;
 
@@ -146,6 +152,12 @@ public class PlayerStateMachine : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(_isLockOnPressed && !_requiresNewLockOnPress)
+        {
+            _lockOnSystemScript.ToggleLockOn();
+            _requiresNewLockOnPress = true;
+        }
+
         MovePlayerRelativeToCamera();
         RotatePlayer();
         _currentState.UpdateStates();
@@ -169,6 +181,12 @@ public class PlayerStateMachine : MonoBehaviour
     {
         _isAttackPressed = context.ReadValueAsButton();
         _requiresNewAttackPressed = false;
+    }
+
+    private void OnLockOnInput(InputAction.CallbackContext context)
+    {
+        _isLockOnPressed = context.ReadValueAsButton();
+        _requiresNewLockOnPress = false;
     }
 
     void MovePlayerRelativeToCamera()
