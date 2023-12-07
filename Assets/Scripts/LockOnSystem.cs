@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Cinemachine;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 //Reference: https://amirazmi.net/targeting-system/
@@ -13,12 +12,12 @@ public class LockOnSystem : MonoBehaviour
 {
     #region Reference Variables
     private CinemachineTargetGroup _targetGroup;
-    private int _numberOfTargetsInRange;
+    //private int _numberOfTargetsInRange;
     private List<GameObject> _targetCandidates;
     private bool _lockedOn;
     private Transform _currentLockOnTransform;
     [SerializeField] float _maxLockOnAngle;
-    Image _lockOnReticle;
+    private Image _lockOnReticle;
 
     #endregion
 
@@ -28,7 +27,7 @@ public class LockOnSystem : MonoBehaviour
         _lockOnReticle = GameObject.Find("Reticle").GetComponent<Image>();
         _lockOnReticle.enabled = false; 
         _targetCandidates = new List<GameObject>();
-        _numberOfTargetsInRange = 0;
+        //_numberOfTargetsInRange = 0;
         _lockedOn = false;
     }
 
@@ -49,7 +48,7 @@ public class LockOnSystem : MonoBehaviour
         {
             Debug.Log("Target Candidate Added");
             _targetCandidates.Add(other.gameObject);
-            _numberOfTargetsInRange++;
+            // _numberOfTargetsInRange++;
         }
     }
 
@@ -58,47 +57,49 @@ public class LockOnSystem : MonoBehaviour
         if(other.tag == "Targetable")
         {
             _targetCandidates.Remove(other.gameObject);
-            _numberOfTargetsInRange--;
+            // _numberOfTargetsInRange--;
         }
     }
 
     public void ToggleLockOn()
     {
         //Add lock on target to camera target group
-            if(!_lockedOn && _targetCandidates.Count > 0)
+        if(!_lockedOn && _targetCandidates.Count > 0)
+        {
+            //Sort the target candidates in order to lock on to the closest one
+            List<GameObject> sortedTargetCandidates = _targetCandidates.OrderBy(targetCandidates =>
             {
-                Debug.Log("Locking On");
+                return AngleFromTarget(targetCandidates);
+            }).ToList();
 
-                //Sort the target candidates in order to lock on to the closest one
-                List<GameObject> sortedTargetCandidates = _targetCandidates.OrderBy(targetCandidates =>
-                {
-                    return AngleFromTarget(targetCandidates);
-                }).ToList();
+            // foreach( var x in sortedTargetCandidates) {
+            //     Debug.Log( x.ToString());
+            // }
 
-                //Only use first target candidate from the sorted list that is within the max angle range
-                int index = 0;
-                while(_currentLockOnTransform == null)
+            //Only use first target candidate from the sorted list that is within the max angle range
+            int index = 0;
+            while(_currentLockOnTransform == null && index < sortedTargetCandidates.Count)
+            {
+                if(AngleFromTarget(sortedTargetCandidates[index]) <= _maxLockOnAngle)
                 {
-                    if(AngleFromTarget(sortedTargetCandidates[index]) <= _maxLockOnAngle)
-                    {
-                        _currentLockOnTransform = sortedTargetCandidates[index].transform;
-                    }
-                    index++;
+                    Debug.Log("Locking On");
+                    _currentLockOnTransform = sortedTargetCandidates[index].transform;
+                    _targetGroup.AddMember(_currentLockOnTransform, 1f, 1f);
+                    _lockedOn = true;
+                    _lockOnReticle.enabled = true;
                 }
-
-                _targetGroup.AddMember(_currentLockOnTransform, 1f, 1f);
-                _lockedOn = true;
-                _lockOnReticle.enabled = true;
+                index++;
             }
-            //Remove current lock on target from camera target group
-            else if (_currentLockOnTransform != null)
-            {
-                Debug.Log("Locking Off");
-                _targetGroup.RemoveMember(_currentLockOnTransform);
-                _lockedOn = false;
-                _currentLockOnTransform = null;
-                _lockOnReticle.enabled = false;
-            }
+        }
+        //Remove current lock on target from camera target group
+        else if (_currentLockOnTransform != null)
+        {
+            Debug.Log("Locking Off");
+            _targetGroup.RemoveMember(_currentLockOnTransform);
+            _currentLockOnTransform = null;
+            _lockedOn = false;
+            _lockOnReticle.enabled = false;
+        }
     }
 
     private float AngleFromTarget(GameObject target)
@@ -107,7 +108,7 @@ public class LockOnSystem : MonoBehaviour
         Vector3 targetDirection = target.transform.position - Camera.main.transform.position;
 
         //convert camera forward to 2d vector
-         Vector2 cameraForward = new Vector2(Camera.main.transform.forward.x, Camera.main.transform.forward.z);
+        Vector2 cameraForward = new Vector2(Camera.main.transform.forward.x, Camera.main.transform.forward.z);
 
         //convert target direction into 2d vector
         Vector2 targetDirection2D = new Vector2(targetDirection.x, targetDirection.z);
