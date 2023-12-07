@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 //Reference: https://amirazmi.net/targeting-system/
 
@@ -13,31 +15,33 @@ public class LockOnSystem : MonoBehaviour
     private CinemachineTargetGroup _targetGroup;
     private int _numberOfTargetsInRange;
     private List<GameObject> _targetCandidates;
-    private PlayerInput _playerInput;
-    private bool _isLockOnPressed;
     private bool _lockedOn;
     private Transform _currentLockOnTransform;
+    [SerializeField] float _maxLockOnAngle;
+    Image _lockOnReticle;
 
     #endregion
 
     void Awake()
     {
-        _playerInput = new PlayerInput();
         _targetGroup = GameObject.Find("Target Group").GetComponent<CinemachineTargetGroup>();
+        _lockOnReticle = GameObject.Find("Reticle").GetComponent<Image>();
+        _lockOnReticle.enabled = false; 
         _targetCandidates = new List<GameObject>();
         _numberOfTargetsInRange = 0;
         _lockedOn = false;
     }
 
-    // Update is called once per frame
-    // void Update()
-    // {
-    //     if(_isLockOnPressed)
-    //     {
-    //         Debug.Log("Lock on pressed");
-    //         ToggleLockOn();
-    //     }
-    // }
+    //Update is called once per frame
+    void Update()
+    {
+        if(_lockedOn)
+        {
+            //Making lock on UI follow position of object currently locked on
+            Vector3 screenPosition = Camera.main.WorldToScreenPoint(_currentLockOnTransform.position);
+            _lockOnReticle.transform.position = screenPosition;
+        }
+    }
 
     private void OnTriggerEnter(Collider other) 
     {
@@ -64,9 +68,27 @@ public class LockOnSystem : MonoBehaviour
             if(!_lockedOn && _targetCandidates.Count > 0)
             {
                 Debug.Log("Locking On");
-                _currentLockOnTransform = _targetCandidates[0].transform;
+
+                //Sort the target candidates in order to lock on to the closest one
+                List<GameObject> sortedTargetCandidates = _targetCandidates.OrderBy(targetCandidates =>
+                {
+                    return AngleFromTarget(targetCandidates);
+                }).ToList();
+
+                //Only use first target candidate from the sorted list that is within the max angle range
+                int index = 0;
+                while(_currentLockOnTransform == null)
+                {
+                    if(AngleFromTarget(sortedTargetCandidates[index]) <= _maxLockOnAngle)
+                    {
+                        _currentLockOnTransform = sortedTargetCandidates[index].transform;
+                    }
+                    index++;
+                }
+
                 _targetGroup.AddMember(_currentLockOnTransform, 1f, 1f);
                 _lockedOn = true;
+                _lockOnReticle.enabled = true;
             }
             //Remove current lock on target from camera target group
             else if (_currentLockOnTransform != null)
@@ -74,6 +96,23 @@ public class LockOnSystem : MonoBehaviour
                 Debug.Log("Locking Off");
                 _targetGroup.RemoveMember(_currentLockOnTransform);
                 _lockedOn = false;
+                _currentLockOnTransform = null;
+                _lockOnReticle.enabled = false;
             }
+    }
+
+    private float AngleFromTarget(GameObject target)
+    {
+        //get vector from camera to target candidate
+        Vector3 targetDirection = target.transform.position - Camera.main.transform.position;
+
+        //convert camera forward to 2d vector
+         Vector2 cameraForward = new Vector2(Camera.main.transform.forward.x, Camera.main.transform.forward.z);
+
+        //convert target direction into 2d vector
+        Vector2 targetDirection2D = new Vector2(targetDirection.x, targetDirection.z);
+
+        //angle between camera forward2d and target direction 2d vectors
+        return Vector2.Angle(cameraForward, targetDirection2D);
     }
 }

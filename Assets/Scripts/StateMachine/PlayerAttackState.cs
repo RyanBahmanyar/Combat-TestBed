@@ -6,7 +6,7 @@ internal class PlayerAttackState : PlayerBaseState
 {
     private float _timer = 0;
     private Vector3 _targetPosition;
-
+    
     //Reset the attack counter if the player does not press attack button X seconds after previous attack
     IEnumerator IAttackResetRoutine()
     {
@@ -75,7 +75,7 @@ internal class PlayerAttackState : PlayerBaseState
             HandleAttack();
         }
 
-        Context.transform.position = Vector3.Lerp(Context.transform.position, _targetPosition, 4f * Time.deltaTime);
+        Context.transform.position = Vector3.Lerp(Context.transform.position, _targetPosition, 10f * Time.deltaTime);
 
         _timer += Time.deltaTime;
     }
