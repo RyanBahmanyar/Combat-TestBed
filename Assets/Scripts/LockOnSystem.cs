@@ -12,12 +12,12 @@ public class LockOnSystem : MonoBehaviour
 {
     #region Reference Variables
     private CinemachineTargetGroup _targetGroup;
-    //private int _numberOfTargetsInRange;
     private List<GameObject> _targetCandidates;
     private bool _lockedOn;
     private Transform _currentLockOnTransform;
     [SerializeField] float _maxLockOnAngle;
     private Image _lockOnReticle;
+    private int _index;
 
     #endregion
 
@@ -27,8 +27,8 @@ public class LockOnSystem : MonoBehaviour
         _lockOnReticle = GameObject.Find("Reticle").GetComponent<Image>();
         _lockOnReticle.enabled = false; 
         _targetCandidates = new List<GameObject>();
-        //_numberOfTargetsInRange = 0;
         _lockedOn = false;
+        _index = 0;
     }
 
     //Update is called once per frame
@@ -48,7 +48,6 @@ public class LockOnSystem : MonoBehaviour
         {
             Debug.Log("Target Candidate Added");
             _targetCandidates.Add(other.gameObject);
-            // _numberOfTargetsInRange++;
         }
     }
 
@@ -57,7 +56,6 @@ public class LockOnSystem : MonoBehaviour
         if(other.tag == "Targetable")
         {
             _targetCandidates.Remove(other.gameObject);
-            // _numberOfTargetsInRange--;
         }
     }
 
@@ -76,17 +74,20 @@ public class LockOnSystem : MonoBehaviour
             //     Debug.Log( x.ToString());
             // }
 
+            _targetCandidates = sortedTargetCandidates;
+
             //Only use first target candidate from the sorted list that is within the max angle range
             int index = 0;
-            while(_currentLockOnTransform == null && index < sortedTargetCandidates.Count)
+            while(_currentLockOnTransform == null && index < _targetCandidates.Count)
             {
-                if(AngleFromTarget(sortedTargetCandidates[index]) <= _maxLockOnAngle)
+                if(Mathf.Abs(AngleFromTarget(_targetCandidates[index])) <= _maxLockOnAngle)
                 {
                     Debug.Log("Locking On");
-                    _currentLockOnTransform = sortedTargetCandidates[index].transform;
-                    _targetGroup.AddMember(_currentLockOnTransform, 1f, 1f);
+                    _currentLockOnTransform = _targetCandidates[index].transform;
+                    _targetGroup.AddMember(_currentLockOnTransform, 2f, 1f);
                     _lockedOn = true;
                     _lockOnReticle.enabled = true;
+                    _index = index;
                 }
                 index++;
             }
@@ -99,6 +100,26 @@ public class LockOnSystem : MonoBehaviour
             _currentLockOnTransform = null;
             _lockedOn = false;
             _lockOnReticle.enabled = false;
+        }
+    }
+
+    //Switch current lock on to the next target candidate. Cycles across all candidates and loops back.
+    public void SwitchTarget()
+    {
+        foreach( var x in _targetCandidates) {
+            Debug.Log( x.ToString());
+        }
+
+        if(_lockedOn && _targetCandidates.Count > 1)
+        {
+            if(++_index >= _targetCandidates.Count)
+            {
+                _index = 0;
+            }
+
+            _targetGroup.RemoveMember(_currentLockOnTransform);
+            _currentLockOnTransform = _targetCandidates[_index].transform;
+            _targetGroup.AddMember(_currentLockOnTransform, 2f, 1f);
         }
     }
 

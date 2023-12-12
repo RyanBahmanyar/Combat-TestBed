@@ -62,6 +62,15 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SwitchTarget"",
+                    ""type"": ""Button"",
+                    ""id"": ""78477972-8d2d-442d-9fcf-1be0e9e40635"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -240,6 +249,28 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""action"": ""Lock On"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""be17e241-b62e-4273-9ea2-293d88813902"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SwitchTarget"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""18b3d139-27f4-427a-bafe-eb7af2ee79a2"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SwitchTarget"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -252,6 +283,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         m_PlayerControls_Jump = m_PlayerControls.FindAction("Jump", throwIfNotFound: true);
         m_PlayerControls_Attack = m_PlayerControls.FindAction("Attack", throwIfNotFound: true);
         m_PlayerControls_LockOn = m_PlayerControls.FindAction("Lock On", throwIfNotFound: true);
+        m_PlayerControls_SwitchTarget = m_PlayerControls.FindAction("SwitchTarget", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -317,6 +349,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerControls_Jump;
     private readonly InputAction m_PlayerControls_Attack;
     private readonly InputAction m_PlayerControls_LockOn;
+    private readonly InputAction m_PlayerControls_SwitchTarget;
     public struct PlayerControlsActions
     {
         private @PlayerInput m_Wrapper;
@@ -325,6 +358,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         public InputAction @Jump => m_Wrapper.m_PlayerControls_Jump;
         public InputAction @Attack => m_Wrapper.m_PlayerControls_Attack;
         public InputAction @LockOn => m_Wrapper.m_PlayerControls_LockOn;
+        public InputAction @SwitchTarget => m_Wrapper.m_PlayerControls_SwitchTarget;
         public InputActionMap Get() { return m_Wrapper.m_PlayerControls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -346,6 +380,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @LockOn.started += instance.OnLockOn;
             @LockOn.performed += instance.OnLockOn;
             @LockOn.canceled += instance.OnLockOn;
+            @SwitchTarget.started += instance.OnSwitchTarget;
+            @SwitchTarget.performed += instance.OnSwitchTarget;
+            @SwitchTarget.canceled += instance.OnSwitchTarget;
         }
 
         private void UnregisterCallbacks(IPlayerControlsActions instance)
@@ -362,6 +399,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @LockOn.started -= instance.OnLockOn;
             @LockOn.performed -= instance.OnLockOn;
             @LockOn.canceled -= instance.OnLockOn;
+            @SwitchTarget.started -= instance.OnSwitchTarget;
+            @SwitchTarget.performed -= instance.OnSwitchTarget;
+            @SwitchTarget.canceled -= instance.OnSwitchTarget;
         }
 
         public void RemoveCallbacks(IPlayerControlsActions instance)
@@ -385,5 +425,6 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         void OnJump(InputAction.CallbackContext context);
         void OnAttack(InputAction.CallbackContext context);
         void OnLockOn(InputAction.CallbackContext context);
+        void OnSwitchTarget(InputAction.CallbackContext context);
     }
 }

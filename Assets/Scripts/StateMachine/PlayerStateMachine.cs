@@ -49,6 +49,8 @@ public class PlayerStateMachine : MonoBehaviour
     private bool _requiresNewAttackPressed;
     private bool _isLockOnPressed = false;
     private bool _requiresNewLockOnPress;
+    private bool _isSwitchTargetPressed = false;
+    private bool _requiresNewSwitchTargetPress;
     private Dictionary<int, float> _attackTimes = new Dictionary<int, float>();
 
     #endregion
@@ -122,12 +124,14 @@ public class PlayerStateMachine : MonoBehaviour
         _playerInput.PlayerControls.Move.started += OnMovementInput;
         _playerInput.PlayerControls.Move.canceled += OnMovementInput;
         _playerInput.PlayerControls.Move.performed += OnMovementInput;
-        _playerInput.PlayerControls.Jump.started += OnJump;
-        _playerInput.PlayerControls.Jump.canceled += OnJump;
-        _playerInput.PlayerControls.Attack.started += OnAttack;
-        _playerInput.PlayerControls.Attack.canceled += OnAttack;
+        _playerInput.PlayerControls.Jump.started += OnJumpInput;
+        _playerInput.PlayerControls.Jump.canceled += OnJumpInput;
+        _playerInput.PlayerControls.Attack.started += OnAttackInput;
+        _playerInput.PlayerControls.Attack.canceled += OnAttackInput;
         _playerInput.PlayerControls.LockOn.started += OnLockOnInput;
         _playerInput.PlayerControls.LockOn.canceled += OnLockOnInput;
+        _playerInput.PlayerControls.SwitchTarget.started += OnSwitchTargetInput;
+        _playerInput.PlayerControls.SwitchTarget.canceled += OnSwitchTargetInput;
 
         //Set up movement variables
         _rotationSpeed = 4f;
@@ -157,6 +161,11 @@ public class PlayerStateMachine : MonoBehaviour
             _lockOnSystemScript.ToggleLockOn();
             _requiresNewLockOnPress = true;
         }
+        if(_isSwitchTargetPressed && !_requiresNewSwitchTargetPress)
+        {
+            _lockOnSystemScript.SwitchTarget();
+            _requiresNewSwitchTargetPress = true;
+        }
 
         MovePlayerRelativeToCamera();
         RotatePlayer();
@@ -171,13 +180,13 @@ public class PlayerStateMachine : MonoBehaviour
         _isMovementPressed = _currentMovement.x != 0 || _currentMovement.z != 0;
     }
 
-    void OnJump(InputAction.CallbackContext context)
+    void OnJumpInput(InputAction.CallbackContext context)
     {
         _isJumpPressed = context.ReadValueAsButton();
         _requiresNewJumpPressed = false;
     }
 
-    void OnAttack(InputAction.CallbackContext context)
+    void OnAttackInput(InputAction.CallbackContext context)
     {
         _isAttackPressed = context.ReadValueAsButton();
         _requiresNewAttackPressed = false;
@@ -187,6 +196,12 @@ public class PlayerStateMachine : MonoBehaviour
     {
         _isLockOnPressed = context.ReadValueAsButton();
         _requiresNewLockOnPress = false;
+    }
+
+    private void OnSwitchTargetInput(InputAction.CallbackContext context)
+    {
+        _isSwitchTargetPressed = context.ReadValueAsButton();
+        _requiresNewSwitchTargetPress = false;
     }
 
     void MovePlayerRelativeToCamera()
