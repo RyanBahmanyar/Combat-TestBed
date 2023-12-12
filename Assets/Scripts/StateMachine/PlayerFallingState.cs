@@ -11,6 +11,7 @@ public class PlayerFallingState : PlayerBaseState
     }
 
     //If Player lands on the ground, then switch to Grounded state
+    //If Player attacks while in the air, switch to Attack state
     public override void CheckSwitchStates()
     {
         if(Context.CharacterController.isGrounded)
@@ -55,6 +56,6 @@ public class PlayerFallingState : PlayerBaseState
 
     void HandleGravity()
     {
-        Context.CurrentMovementY += Context.Gravity * 1.5f * Time.deltaTime;
+        Context.CurrentMovementY += Context.Gravity * 1.3f * Time.deltaTime;
     }
 }

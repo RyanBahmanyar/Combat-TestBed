@@ -102,6 +102,9 @@ public class PlayerStateMachine : MonoBehaviour
 
     #endregion
 
+    //TODO Seems like Character Controller's isGrounded() value is false on startup and then becomes true, which explains
+    //why the state machine momentarily switches to the falling state at the beginning. Look into this.
+
     void Awake()
     {
         //Setting reference variables
@@ -135,7 +138,7 @@ public class PlayerStateMachine : MonoBehaviour
 
         //Set up movement variables
         _rotationSpeed = 4f;
-        _groundGravity = -0.5f;
+        _groundGravity = -0.1f;
 
         //Jump equations found at https://www.youtube.com/watch?v=h2r3_KjChf4
         _timeToApex = _maxJumpTime / 2;
@@ -143,9 +146,9 @@ public class PlayerStateMachine : MonoBehaviour
         _initialJumpVelocity = 2 * _maxJumpHeight / _timeToApex;
 
         //Set up attack timings
-        _attackTimes[1] = 1f;
-        _attackTimes[2] = 1.2f;
-        _attackTimes[3] = 1.1f;
+        _attackTimes[1] = .6f;
+        _attackTimes[2] = .8f;
+        _attackTimes[3] = .7f;
 
         //setup state
         _states = new PlayerStateFactory(this);
